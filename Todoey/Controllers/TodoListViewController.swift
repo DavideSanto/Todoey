@@ -79,14 +79,14 @@ class ToDoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
         //CLosure: what will happen when user klick the ADD Item Button of UIAlert
             
-           // Save into Real DB the freshly newly created Items associated to the selected category
+        // Save into Real DB the freshly newly created Items associated to the selected category
             if let currentCategory = self.selectedCategory {
                 do {
                     try self.realm.write {
-                    let newItem = Item()
-                    newItem.title = textField.text!
-                    newItem.dateCreated = Date()
-                    currentCategory.items.append(newItem)
+                        let newItem = Item()
+                        newItem.title = textField.text!
+                        newItem.dateCreated = Date()
+                        currentCategory.items.append(newItem)
                     }
                 } catch {
                     print("Failed saving new Item , \(error)")
@@ -118,8 +118,6 @@ extension ToDoListViewController: UISearchBarDelegate {
         todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: true)
     tableView.reloadData()
     }
-
-        
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchBar.text?.count == 0 {  // dismiss the searchbar

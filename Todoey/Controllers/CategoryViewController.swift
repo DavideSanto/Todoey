@@ -20,7 +20,7 @@ class CategoryViewController: UITableViewController {
         super.viewDidLoad()
         
        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
+        //First time loading into the view
         loadCategories()
        }
     
@@ -47,9 +47,9 @@ class CategoryViewController: UITableViewController {
         
         let  alert = UIAlertController(title: "Add New Category", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "Add Category", style: .default) { (action) in
-            //CLosure: what will happen when user klick the ADD Item Button on UIAlert
             
-            let newCategory = Category()  //Create new Category in the  Database (SQLIte DB under Core Data)
+            //CLosure: what will happen when user klick the ADD Item Button on UIAlert
+            let newCategory = Category()  //Create new Category in the  Database (This time a REAL DB)
             newCategory.name = textField.text!
             
             self.save(category: newCategory)
@@ -69,8 +69,8 @@ class CategoryViewController: UITableViewController {
     func save(category: Category) {
         // Commits to DB the Categories Context created/modified by user
         do{
-            try realm.write {
-                realm.add(category)
+            try realm.write {          //
+                realm.add(category)   // here we add a Realm unmanaged Object inside a Write Context
             }
         } catch {
             print("Error while saving Category  \(error)")
@@ -79,15 +79,7 @@ class CategoryViewController: UITableViewController {
     }
     
     func loadCategories() {
-//
-//        let request: NSFetchRequest<Category> = Category.fetchRequest()
-//        do {
-//            categories = try context.fetch(request)
-//        } catch {
-//            print("Error while Up-loading Categories \(error) ")
-//        }
-         categories = realm.objects(Category.self)
-        
+        categories = realm.objects(Category.self)
         tableView.reloadData()
     }
     
