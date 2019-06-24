@@ -9,7 +9,8 @@
 import UIKit
 import RealmSwift
 
-class CategoryViewController: UITableViewController {
+
+class CategoryViewController: SwipeTableViewController {
 
     let realm = try! Realm()
     
@@ -22,6 +23,8 @@ class CategoryViewController: UITableViewController {
        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         //First time loading into the view
         loadCategories()
+        
+      
        }
     
     //MARK: - TableView Datasource Methods
@@ -29,10 +32,15 @@ class CategoryViewController: UITableViewController {
         return categories?.count ?? 1
     }
     
-    // Function to populate the Category TableView (IN: local TableView and Cell Selected, OUT: Table View Cell
+
+    
+    // Function to populate the Category TableView (IN: local TableView and Cell Selected, OUT: Table View Cell updated
+    // This works by inheritance of the Super Class SwipeCellTableView [Note here no deleagte functions are used]
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-       // Let's grab a cell from the Queue 
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        
+        // We are using a Super Class to create Swipe Cells...so we pass the local Table view object and Index Path to the 'Super' Class to manage the delegation for Swiping and we get a constant to write the local cell of this view
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)  // this is a Swipe Cell
+        
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added yet"
         
         return cell
@@ -83,17 +91,35 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    //MARK: - TableView Delegate Methods (or what happens when User clocks on a Category in teh TableView list
+    //MARK: Delete Data using SwipeCell implemented in a Super Call we inherited from
+    override func updateModel(at indexPath: IndexPath) {
+       
+        super.updateModel(at: indexPath)
+        if let categoryForDeletion = self.categories?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(categoryForDeletion)
+                }
+            } catch {
+                print("Error while Deleting Categories from Realm, \(error)")
+            }
+        }
+    }
+    
+    //MARK: - TableView Delegate Methods (or what happens when User clicks on a Category in the TableView list
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "goToItems", sender: self)
     }
+    
+    
     // Function used for Preparing for Segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let destinationVC = segue.destination as! ToDoListViewController  //Cteate local pointer to Destination View Contrl
-        
+
         if let indexPath = tableView.indexPathForSelectedRow {
             destinationVC.selectedCategory = categories?[indexPath.row]  // Pass to DestinationVC the category selected by the user
         }
-        
+    
     }
 }
+
