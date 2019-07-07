@@ -51,7 +51,7 @@ class SwipeTableViewController: UITableViewController, SwipeTableViewCellDelegat
     // THis function is a placeholder to be overridden in final TableView Class to Upate Model
     func updateModel(at indexPath: IndexPath) {
         //Update Data Model
-        print("Item deleted from SuperClass")
+        print("Item deleted via SuperClass")
     }
     
 }

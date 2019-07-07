@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 
 class CategoryViewController: SwipeTableViewController {
@@ -23,7 +24,7 @@ class CategoryViewController: SwipeTableViewController {
        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         //First time loading into the view
         loadCategories()
-        
+      tableView.separatorStyle = .none
       
        }
     
@@ -41,8 +42,12 @@ class CategoryViewController: SwipeTableViewController {
         // We are using a Super Class to create Swipe Cells...so we pass the local Table view object and Index Path to the 'Super' Class to manage the delegation for Swiping and we get a constant to write the local cell of this view
         let cell = super.tableView(tableView, cellForRowAt: indexPath)  // this is a Swipe Cell
         
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added yet"
-        
+        if let category = categories?[indexPath.row] {
+            guard let categoryColour = UIColor(hexString: category.colour) else {fatalError()}
+            cell.textLabel?.text = category.name
+            cell.backgroundColor = categoryColour
+            cell.textLabel?.textColor = ContrastColorOf(categoryColour, returnFlat: true)
+        }
         return cell
     }
     
@@ -59,7 +64,7 @@ class CategoryViewController: SwipeTableViewController {
             //CLosure: what will happen when user klick the ADD Item Button on UIAlert
             let newCategory = Category()  //Create new Category in the  Database (This time a REAL DB)
             newCategory.name = textField.text!
-            
+            newCategory.colour = UIColor.randomFlat.hexValue()
             self.save(category: newCategory)
         }
         

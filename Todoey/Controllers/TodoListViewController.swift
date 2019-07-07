@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class ToDoListViewController: SwipeTableViewController {
 
@@ -15,15 +16,48 @@ class ToDoListViewController: SwipeTableViewController {
     var realm = try! Realm()
     var todoItems : Results<Item>?
     
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     var selectedCategory : Category? { didSet{    // if the Category is SET then automatically call loadItem()
            loadItems()
         }
+    
+
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print(" To localize the Realm Object: \(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))")
+        //print(" To localize the Realm Object: \(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))")
+        
+       
+        tableView.separatorStyle = .none
         //loadItems()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        title = selectedCategory?.name
+        guard  let colourHex = selectedCategory?.colour else {fatalError("Selected Category Colour does not exist")}
+        updateNavBar(withHexCode: colourHex)
+        
+    }
+    // Restablishing the initial Nav bar Colours
+    override func viewWillDisappear(_ animated: Bool) {
+        guard let originalColour = UIColor(hexString: "1D9BF6") else {fatalError("Original Color Hex Code is erroneous")}
+        updateNavBar(withHexCode: originalColour.hexValue())
+    }
+    
+    //MARK - Nav Bar Setup methods
+    
+    func updateNavBar(withHexCode colourHexCode: String) {
+       
+        guard let navbar = navigationController?.navigationBar else {fatalError("Navigation Controller not yet created")}
+        
+        
+        guard let navBarColour = UIColor(hexString: colourHexCode) else {fatalError("Nav Bar COlour does not return")}
+        navbar.barTintColor = navBarColour
+        navbar.tintColor = ContrastColorOf(navBarColour, returnFlat: true)
+        navbar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(navBarColour, returnFlat: true)]
+        searchBar.barTintColor = navBarColour
     }
     
  // MARK - Tableview Datasource Methods
@@ -41,6 +75,11 @@ class ToDoListViewController: SwipeTableViewController {
         //Optional Chaining used as we wish to access the property of the todoItems which is an array of optional 'Item' objects
         if let item = todoItems?[indexPath.row] {
             cell.textLabel?.text = item.title
+            
+            if let colour = UIColor(hexString:selectedCategory!.colour)?.darken(byPercentage:CGFloat( indexPath.row) / CGFloat(todoItems!.count)){
+                cell.backgroundColor = colour
+                cell.textLabel?.textColor = ContrastColorOf(colour, returnFlat: true)
+            }
             // Ternary operator ⇒ Value = condition ? valueifTrue : value ifFalse
             cell.accessoryType =  item.done ? .checkmark : .none
         } else {
